@@ -100,6 +100,8 @@ Thumbs.db
 *.db
 
 # Uploads (keep the directory but ignore contents)
+src/uploads/*
+!src/uploads/.gitkeep
 uploads/*
 !uploads/.gitkeep
 
