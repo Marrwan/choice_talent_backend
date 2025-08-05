@@ -10,6 +10,7 @@
     "test:watch": "jest --watch",
     "db:migrate": "sequelize-cli db:migrate",
     "db:seed": "sequelize-cli db:seed:all",
+    "db:setup": "node setup-db.js",
     "db:reset": "psql -U postgres -c 'DROP DATABASE IF EXISTS choice_talent_dev;' && psql -U postgres -c 'CREATE DATABASE choice_talent_dev;' && sequelize-cli db:migrate"
   },
   "dependencies": {
