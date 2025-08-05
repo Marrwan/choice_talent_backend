@@ -3,6 +3,16 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
+    // Check if table already exists
+    const tableExists = await queryInterface.showAllTables().then(tables => 
+      tables.includes('call_history')
+    );
+    
+    if (tableExists) {
+      console.log('call_history table already exists, skipping creation');
+      return;
+    }
+    
     await queryInterface.createTable('call_history', {
       id: {
         type: Sequelize.UUID,
@@ -75,6 +85,13 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('call_history');
+    // Check if table exists before dropping
+    const tableExists = await queryInterface.showAllTables().then(tables => 
+      tables.includes('call_history')
+    );
+    
+    if (tableExists) {
+      await queryInterface.dropTable('call_history');
+    }
   }
 };
