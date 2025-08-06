@@ -33,6 +33,7 @@ module.exports = (sequelize) => {
     tableName: 'plans',
     timestamps: true,
     underscored: true,
+    paranoid: false, // Override global paranoid setting
   });
 
   return Plan;

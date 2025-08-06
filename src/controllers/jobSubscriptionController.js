@@ -1,4 +1,5 @@
 const asyncHandler = require('express-async-handler');
+const { Op } = require('sequelize');
 const { 
   JobSubscription, 
   JobPayment, 
@@ -65,70 +66,55 @@ const checkEligibility = asyncHandler(async (req, res, next) => {
 
 // Get subscription packages
 const getSubscriptionPackages = asyncHandler(async (req, res, next) => {
-  const packages = [
-    {
-      id: '0-2_years',
-      name: '0-2 Years Experience',
-      price: 3000,
-      duration: 12,
-      description: 'Perfect for entry-level professionals',
-      features: [
-        'Career advisory',
-        'Profile screening',
-        'Job application feedback',
-        'Profile assessment feedback',
-        'Forwarding your profile to potential employers'
-      ]
+  // Get packages from database
+  const { Plan } = require('../models');
+  
+  const plans = await Plan.findAll({
+    where: {
+      name: {
+        [Op.in]: ['0-2_years', '3-5_years', '6-7_years', '10_plus_years']
+      }
     },
-    {
-      id: '3-5_years',
-      name: '3-5 Years Experience',
-      price: 5000,
-      duration: 12,
-      description: 'Ideal for mid-level professionals',
-      features: [
-        'Career advisory',
-        'Profile screening',
-        'Job application feedback',
-        'Profile assessment feedback',
-        'Forwarding your profile to potential employers'
-      ]
-    },
-    {
-      id: '6-7_years',
-      name: '6-7 Years Experience',
-      price: 7000,
-      duration: 12,
-      description: 'Designed for senior professionals',
-      features: [
-        'Career advisory',
-        'Profile screening',
-        'Job application feedback',
-        'Profile assessment feedback',
-        'Forwarding your profile to potential employers'
-      ]
-    },
-    {
-      id: '10_plus_years',
-      name: '10+ Years Experience',
-      price: 10000,
-      duration: 12,
-      description: 'Premium package for experienced professionals',
-      features: [
-        'Career advisory',
-        'Profile screening',
-        'Job application feedback',
-        'Profile assessment feedback',
-        'Forwarding your profile to potential employers'
-      ]
-    }
-  ];
+    order: [['price', 'ASC']]
+  });
+
+  // Transform plans to match frontend expectations
+  const packages = plans.map(plan => ({
+    id: plan.name,
+    name: getPackageDisplayName(plan.name),
+    price: plan.price, // Already in kobo
+    duration: plan.duration, // Already in days
+    description: getPackageDescription(plan.name),
+    features: plan.features || []
+  }));
 
   res.status(200).json({
     success: true,
     data: { packages }
   });
 });
+
+// Helper function to get package descriptions
+const getPackageDescription = (packageName) => {
+  const descriptions = {
+    '0-2_years': 'Perfect for entry-level professionals',
+    '3-5_years': 'Ideal for mid-level professionals', 
+    '6-7_years': 'Designed for senior professionals',
+    '10_plus_years': 'Premium package for experienced professionals'
+  };
+  return descriptions[packageName] || 'Professional career support package';
+};
+
+// Helper function to get package display names
+const getPackageDisplayName = (packageName) => {
+  const displayNames = {
+    '0-2_years': '0 – 2 years of Work Experience',
+    '3-5_years': '3 – 5 years of Work Experience',
+    '6-7_years': '6 – 7 years of Work Experience',
+    '10_plus_years': '10+ years of Work Experience'
+  };
+  return displayNames[packageName] || packageName.replace('_', ' ').replace('-', ' ');
+};
 
 // Create subscription
 const createSubscription = asyncHandler(async (req, res, next) => {
@@ -170,15 +156,20 @@ const createSubscription = asyncHandler(async (req, res, next) => {
     return next(createError(400, 'You already have an active subscription'));
   }
 
-  // Get package details
-  const packageDetails = {
-    '0-2_years': { price: 3000, duration: 12 },
-    '3-5_years': { price: 5000, duration: 12 },
-    '6-7_years': { price: 7000, duration: 12 },
-    '10_plus_years': { price: 10000, duration: 12 }
-  };
+  // Get package details from database
+  const { Plan } = require('../models');
+  const plan = await Plan.findOne({
+    where: { name: subscriptionType }
+  });
 
-  const packageInfo = packageDetails[subscriptionType];
+  if (!plan) {
+    return next(createError(400, 'Invalid subscription type'));
+  }
+
+  const packageInfo = {
+    price: plan.price / 100, // Convert kobo to Naira for storage
+    duration: Math.floor(plan.duration / 30) // Convert days to months for storage
+  };
 
   // Create subscription
   const subscription = await JobSubscription.create({
