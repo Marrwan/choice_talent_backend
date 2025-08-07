@@ -173,60 +173,49 @@ const getDashboard = asyncHandler(async (req, res) => {
 /**
  * Get list of users for chat
  */
-const getUsers = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 20, search = '' } = req.query;
-  const offset = (page - 1) * limit;
-  const currentUserId = req.user.id;
+const getUsers = asyncHandler(async (req, res, next) => {
+  const users = await User.findAll({
+    attributes: ['id', 'name', 'username', 'email', 'profilePicture', 'is_online'],
+    where: {
+      id: { [require('sequelize').Op.ne]: req.user.id } // Exclude current user
+    },
+    order: [['name', 'ASC']]
+  });
 
-  const { Op } = require('sequelize');
+  res.status(200).json({
+    success: true,
+    data: users
+  });
+});
+
+// Search users
+const searchUsers = asyncHandler(async (req, res, next) => {
+  const { q } = req.query;
   
-  // Build search conditions
-  const whereConditions = {
-    id: { [Op.ne]: currentUserId }, // Exclude current user
-    isEmailVerified: true // Only verified users
-  };
-
-  if (search) {
-    whereConditions[Op.or] = [
-      { name: { [Op.iLike]: `%${search}%` } },
-      { realName: { [Op.iLike]: `%${search}%` } },
-      { username: { [Op.iLike]: `%${search}%` } }
-    ];
+  if (!q || typeof q !== 'string') {
+    return res.status(400).json({
+      success: false,
+      message: 'Search query is required'
+    });
   }
 
   const users = await User.findAll({
-    where: whereConditions,
-    attributes: [
-      'id',
-      'name',
-      'realName',
-      'username',
-      'profilePicture',
-      'interests',
-      'hobbies',
-      'occupation',
-      'country',
-      'state',
-      'createdAt'
-    ],
-    limit: parseInt(limit),
-    offset: parseInt(offset),
-    order: [['createdAt', 'DESC']]
+    attributes: ['id', 'name', 'username', 'email', 'profilePicture', 'is_online'],
+    where: {
+      id: { [require('sequelize').Op.ne]: req.user.id }, // Exclude current user
+      [require('sequelize').Op.or]: [
+        { name: { [require('sequelize').Op.iLike]: `%${q}%` } },
+        { username: { [require('sequelize').Op.iLike]: `%${q}%` } },
+        { email: { [require('sequelize').Op.iLike]: `%${q}%` } }
+      ]
+    },
+    order: [['name', 'ASC']],
+    limit: 50
   });
 
-  const totalUsers = await User.count({
-    where: whereConditions
-  });
-
-  res.json({
+  res.status(200).json({
     success: true,
-    data: users,
-    pagination: {
-      page: parseInt(page),
-      limit: parseInt(limit),
-      total: totalUsers,
-      pages: Math.ceil(totalUsers / limit)
-    }
+    data: users
   });
 });
 
@@ -236,5 +225,6 @@ module.exports = {
   changePassword,
   deleteAccount,
   getDashboard,
-  getUsers
+  getUsers,
+  searchUsers
 }; 

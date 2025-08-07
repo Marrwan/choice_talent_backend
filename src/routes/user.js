@@ -67,4 +67,24 @@ router.get('/list',
   userController.getUsers
 );
 
+/**
+ * @route   GET /api/user/users
+ * @desc    Get all users (for group creation)
+ * @access  Private
+ */
+router.get('/users',
+  authenticateToken,
+  userController.getUsers
+);
+
+/**
+ * @route   GET /api/user/search
+ * @desc    Search users
+ * @access  Private
+ */
+router.get('/search',
+  authenticateToken,
+  userController.searchUsers
+);
+
 module.exports = router; 
