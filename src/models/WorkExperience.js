@@ -61,13 +61,19 @@ module.exports = (sequelize) => {
     timestamps: true,
     underscored: true,
     paranoid: false, // Disable soft deletes for this model
+    defaultScope: {
+      attributes: { exclude: ['profile_id'] }
+    }
   });
 
   // Set up associations
   WorkExperience.associate = function(models) {
     WorkExperience.belongsTo(models.ProfessionalCareerProfile, { 
       foreignKey: 'profileId', 
-      as: 'profile' 
+      as: 'profile',
+      scope: {
+        attributes: { exclude: ['profile_id'] }
+      }
     });
   };
 

@@ -219,6 +219,59 @@ const searchUsers = asyncHandler(async (req, res, next) => {
   });
 });
 
+/**
+ * Upload career profile picture
+ */
+const uploadCareerProfilePicture = asyncHandler(async (req, res) => {
+  console.log('[Upload] Career profile picture upload request received');
+  console.log('[Upload] Request headers:', req.headers);
+  console.log('[Upload] Request body keys:', Object.keys(req.body));
+  console.log('[Upload] Request file:', req.file ? {
+    filename: req.file.filename,
+    originalname: req.file.originalname,
+    mimetype: req.file.mimetype,
+    size: req.file.size
+  } : 'No file');
+  
+  if (!req.file) {
+    console.log('[Upload] No file found in request');
+    return res.status(400).json({
+      success: false,
+      message: 'Profile picture file is required'
+    });
+  }
+
+  console.log('[Upload] File received successfully:', req.file.filename);
+
+  // Generate the full file URL with backend domain
+  const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
+  const fileUrl = `${backendUrl}/api/uploads/profile-pictures/${req.file.filename}`;
+  
+  await req.user.update({ careerProfilePicture: fileUrl });
+
+  console.log('[Upload] Profile picture updated successfully');
+
+  res.status(200).json({
+    success: true,
+    message: 'Career profile picture updated successfully',
+    data: {
+      careerProfilePicture: fileUrl
+    }
+  });
+});
+
+/**
+ * Delete career profile picture
+ */
+const deleteCareerProfilePicture = asyncHandler(async (req, res) => {
+  await req.user.update({ careerProfilePicture: null });
+
+  res.status(200).json({
+    success: true,
+    message: 'Career profile picture deleted successfully'
+  });
+});
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -226,5 +279,7 @@ module.exports = {
   deleteAccount,
   getDashboard,
   getUsers,
-  searchUsers
+  searchUsers,
+  uploadCareerProfilePicture,
+  deleteCareerProfilePicture
 }; 

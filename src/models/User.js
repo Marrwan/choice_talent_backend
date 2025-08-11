@@ -38,27 +38,19 @@ module.exports = (sequelize) => {
       allowNull: true,
       unique: true
     },
-    interests: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      comment: 'User interests stored as text'
-    },
-    hobbies: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      comment: 'User hobbies stored as text'
-    },
-    loveLanguage: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      field: 'love_language',
-      comment: 'User love language preference'
-    },
+
     profilePicture: {
       type: DataTypes.STRING,
       allowNull: true,
       field: 'profile_picture'
     },
+    careerProfilePicture: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: 'career_profile_picture',
+      comment: 'Profile picture for career module'
+    },
+
     dateOfBirth: {
       type: DataTypes.DATEONLY,
       allowNull: true,
@@ -68,24 +60,7 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: true
     },
-    maritalStatus: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      field: 'marital_status'
-    },
-    height: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    complexion: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    bodySize: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      field: 'body_size'
-    },
+
     occupation: {
       type: DataTypes.STRING,
       allowNull: true
@@ -214,7 +189,6 @@ module.exports = (sequelize) => {
   User.prototype.isProfileComplete = function() {
     const requiredFields = [
       'realName', 'username', 'dateOfBirth', 'gender', 
-      'maritalStatus', 'height', 'complexion', 'bodySize', 
       'occupation', 'country', 'state', 'lga'
     ];
     
@@ -226,10 +200,7 @@ module.exports = (sequelize) => {
     return this.subscriptionStatus === 'premium';
   };
 
-  // Helper method to check if user can access matchmaking
-  User.prototype.canAccessMatchmaking = function() {
-    return this.isPremium();
-  };
+
 
   // Helper method to update subscription status
   User.prototype.updateSubscriptionStatus = function(status) {
@@ -247,8 +218,7 @@ module.exports = (sequelize) => {
   // Set up associations
   User.associate = function(models) {
     // Basic associations
-    User.hasOne(models.MatchPreference, { foreignKey: 'userId', as: 'matchPreference' });
-    User.hasMany(models.DatePlan, { foreignKey: 'userId', as: 'datePlans' });
+    
     User.hasOne(models.Subscription, { foreignKey: 'userId', as: 'subscription' });
 
     // Chat associations
@@ -269,12 +239,6 @@ module.exports = (sequelize) => {
 
     // Professional Career Profile associations
     User.hasOne(models.ProfessionalCareerProfile, { foreignKey: 'userId', as: 'professionalCareerProfile' });
-    User.hasMany(models.WorkExperience, { foreignKey: 'userId', as: 'workExperiences' });
-    User.hasMany(models.HigherEducation, { foreignKey: 'userId', as: 'higherEducations' });
-    User.hasMany(models.BasicEducation, { foreignKey: 'userId', as: 'basicEducations' });
-    User.hasMany(models.ProfessionalMembership, { foreignKey: 'userId', as: 'professionalMemberships' });
-    User.hasMany(models.TrainingCertification, { foreignKey: 'userId', as: 'trainingCertifications' });
-    User.hasMany(models.ReferenceDetail, { foreignKey: 'userId', as: 'referenceDetails' });
 
     // Job associations
     User.hasOne(models.JobHuntingSettings, { foreignKey: 'userId', as: 'jobHuntingSettings' });

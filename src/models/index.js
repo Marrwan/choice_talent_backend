@@ -20,8 +20,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL || 'postgresql://localh
 
 // Import models
 const User = require('./User')(sequelize, Sequelize.DataTypes);
-const MatchPreference = require('./MatchPreference')(sequelize, Sequelize.DataTypes);
-const DatePlan = require('./DatePlan')(sequelize, Sequelize.DataTypes);
+
 const Conversation = require('./Conversation')(sequelize, Sequelize.DataTypes);
 const Message = require('./Message')(sequelize, Sequelize.DataTypes);
 const MessageAttachment = require('./MessageAttachment')(sequelize);
@@ -59,8 +58,6 @@ const EmailLog = require('./EmailLog')(sequelize, Sequelize.DataTypes);
 // Set up model associations using the associate methods
 const models = {
   User,
-  MatchPreference,
-  DatePlan,
   Conversation,
   Message,
   MessageAttachment,
@@ -99,8 +96,6 @@ const db = {
   sequelize,
   Sequelize,
   User,
-  MatchPreference,
-  DatePlan,
   Conversation,
   Message,
   MessageAttachment,

@@ -41,7 +41,20 @@ module.exports = (sequelize) => {
     tableName: 'subscriptions',
     timestamps: true,
     underscored: true,
+    paranoid: false, // Disable soft deletes since table doesn't have deleted_at column
   });
+
+  // Set up associations
+  Subscription.associate = function(models) {
+    Subscription.belongsTo(models.Plan, { 
+      foreignKey: 'planId', 
+      as: 'plan' 
+    });
+    Subscription.belongsTo(models.User, { 
+      foreignKey: 'userId', 
+      as: 'user' 
+    });
+  };
 
   return Subscription;
 }; 

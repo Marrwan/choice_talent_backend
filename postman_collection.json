@@ -267,6 +267,94 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Upload Career Profile Picture",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profilePicture\": \"https://example.com/career-profile.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/career-profile-picture",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "career-profile-picture"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Dating Profile Picture",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profilePicture\": \"https://example.com/dating-profile.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/dating-profile-picture",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "dating-profile-picture"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Career Profile Picture",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/career-profile-picture",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "career-profile-picture"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Dating Profile Picture",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/dating-profile-picture",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "dating-profile-picture"]
+            }
+          },
+          "response": []
         }
       ]
     },

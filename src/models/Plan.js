@@ -36,5 +36,13 @@ module.exports = (sequelize) => {
     paranoid: false, // Override global paranoid setting
   });
 
+  // Set up associations
+  Plan.associate = function(models) {
+    Plan.hasMany(models.Subscription, { 
+      foreignKey: 'planId', 
+      as: 'subscriptions' 
+    });
+  };
+
   return Plan;
 }; 

@@ -145,7 +145,6 @@ const login = async (req, res, next) => {
           isEmailVerified: user.isEmailVerified,
           subscriptionStatus: user.subscriptionStatus,
           isPremium: user.isPremium(),
-          canAccessMatchmaking: user.canAccessMatchmaking(),
           lastLoginAt: user.lastLoginAt,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt
@@ -179,7 +178,7 @@ const logout = async (req, res, next) => {
  */
 const getProfile = async (req, res, next) => {
   try {
-    const user = await User.findByPk(req.user.userId);
+    const user = await User.findByPk(req.user.id);
     
     if (!user) {
       throw createError('User not found', 404);
@@ -192,11 +191,21 @@ const getProfile = async (req, res, next) => {
           id: user.id,
           email: user.email,
           name: user.name,
+          realName: user.realName,
+          username: user.username,
+          profilePicture: user.profilePicture,
+          careerProfilePicture: user.careerProfilePicture,
+          dateOfBirth: user.dateOfBirth,
+          gender: user.gender,
+          occupation: user.occupation,
+          country: user.country,
+          state: user.state,
+          lga: user.lga,
+          contactNumber: user.contactNumber,
           isEmailVerified: user.isEmailVerified,
+          lastLoginAt: user.lastLoginAt,
           subscriptionStatus: user.subscriptionStatus,
           isPremium: user.isPremium(),
-          canAccessMatchmaking: user.canAccessMatchmaking(),
-          lastLoginAt: user.lastLoginAt,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt
         }

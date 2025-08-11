@@ -6,7 +6,8 @@ const {
   BasicEducation, 
   ProfessionalMembership, 
   TrainingCertification, 
-  ReferenceDetail 
+  ReferenceDetail,
+  User
 } = require('../models');
 const { createError } = require('../utils/errorUtils');
 const fileUploadService = require('../services/fileUploadService');
@@ -21,32 +22,32 @@ const getProfile = asyncHandler(async (req, res, next) => {
       { 
         model: WorkExperience, 
         as: 'workExperiences',
-        attributes: { exclude: ['userId'] }
+        attributes: { exclude: ['profileId'] }
       },
       { 
         model: HigherEducation, 
         as: 'higherEducations',
-        attributes: { exclude: ['userId'] }
+        attributes: { exclude: ['profileId'] }
       },
       { 
         model: BasicEducation, 
         as: 'basicEducations',
-        attributes: { exclude: ['userId'] }
+        attributes: { exclude: ['profileId'] }
       },
       { 
         model: ProfessionalMembership, 
         as: 'professionalMemberships',
-        attributes: { exclude: ['userId'] }
+        attributes: { exclude: ['profileId'] }
       },
       { 
         model: TrainingCertification, 
         as: 'trainingCertifications',
-        attributes: { exclude: ['userId'] }
+        attributes: { exclude: ['profileId'] }
       },
       { 
         model: ReferenceDetail, 
         as: 'referenceDetails',
-        attributes: { exclude: ['userId'] }
+        attributes: { exclude: ['profileId'] }
       }
     ]
   });
@@ -246,7 +247,7 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
   let profilePictureUrl = profilePicture;
   if (req.file) {
     try {
-      const uploadResult = await fileUploadService.uploadFile(req.file, 'professional-profiles');
+      const uploadResult = await fileUploadService.uploadFile(req.file, 'professional-profiles', req);
       profilePictureUrl = uploadResult.url;
     } catch (error) {
       console.error('File upload error:', error);
@@ -316,7 +317,10 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
           await WorkExperience.create({
             profileId: profile.id,
             ...experience
-          }, { transaction });
+          }, { 
+            transaction,
+            returning: false
+          });
         }
       }
     }
@@ -329,11 +333,14 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
       });
 
       for (const education of safeHigherEducations) {
-        if (education.institutionName && education.courseOfStudy && education.qualification && education.yearOfEntry) {
+        if (education.institutionName && education.courseOfStudy && education.qualification && education.entryYear) {
           await HigherEducation.create({
             profileId: profile.id,
             ...education
-          }, { transaction });
+          }, { 
+            transaction,
+            returning: false
+          });
         }
       }
     }
@@ -350,7 +357,10 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
           await BasicEducation.create({
             profileId: profile.id,
             ...edu
-          }, { transaction });
+          }, { 
+            transaction,
+            returning: false
+          });
         }
       }
     }
@@ -367,7 +377,10 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
           await ProfessionalMembership.create({
             profileId: profile.id,
             ...mem
-          }, { transaction });
+          }, { 
+            transaction,
+            returning: false
+          });
         }
       }
     }
@@ -384,7 +397,10 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
           await TrainingCertification.create({
             profileId: profile.id,
             ...cert
-          }, { transaction });
+          }, { 
+            transaction,
+            returning: false
+          });
         }
       }
     }
@@ -401,9 +417,23 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
           await ReferenceDetail.create({
             profileId: profile.id,
             ...ref
-          }, { transaction });
+          }, { 
+            transaction,
+            returning: false
+          });
         }
       }
+    }
+
+    // Update User model's careerProfilePicture field if profile picture was uploaded
+    if (profilePictureUrl && profilePictureUrl !== profilePicture) {
+      await User.update(
+        { careerProfilePicture: profilePictureUrl },
+        { 
+          where: { id: userId },
+          transaction 
+        }
+      );
     }
 
     await transaction.commit();
@@ -428,7 +458,10 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
     });
 
   } catch (error) {
-    await transaction.rollback();
+    // Only rollback if transaction hasn't been committed yet
+    if (transaction && !transaction.finished) {
+      await transaction.rollback();
+    }
     console.error('Profile save error:', error);
     console.error('Error stack:', error.stack);
     return next(createError(500, 'Failed to save profile data'));

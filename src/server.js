@@ -10,8 +10,7 @@ require('dotenv').config();
 const { sequelize } = require('./models');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
-const matchPreferenceRoutes = require('./routes/matchPreference');
-const datePlanRoutes = require('./routes/datePlan');
+
 const chatRoutes = require('./routes/chat');
 const callRoutes = require('./routes/call');
 const groupRoutes = require('./routes/group');
@@ -114,8 +113,27 @@ app.use('/api/uploads', (req, res, next) => {
 // General middleware
 app.use(compression());
 app.use(morgan('combined'));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+
+// Body parsing middleware - but skip for multipart requests
+app.use((req, res, next) => {
+  const contentType = req.headers['content-type'] || '';
+  if (contentType.startsWith('multipart/form-data')) {
+    console.log('[Server] Skipping body parsing for multipart request');
+    next();
+  } else {
+    express.json({ limit: '10mb' })(req, res, next);
+  }
+});
+
+app.use((req, res, next) => {
+  const contentType = req.headers['content-type'] || '';
+  if (contentType.startsWith('multipart/form-data')) {
+    console.log('[Server] Skipping urlencoded parsing for multipart request');
+    next();
+  } else {
+    express.urlencoded({ extended: true })(req, res, next);
+  }
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -152,8 +170,7 @@ app.get('/test-image', (req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
-app.use('/api/match-preference', matchPreferenceRoutes);
-app.use('/api/date-plan', datePlanRoutes);
+
 app.use('/api/chat', chatRoutes);
 app.use('/api/calls', callRoutes);
 app.use('/api/groups', groupRoutes);

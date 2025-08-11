@@ -179,7 +179,7 @@ const deleteFile = async (filePath, thumbnailPath = null) => {
 /**
  * Upload file to specific directory
  */
-const uploadFile = async (file, directory = 'general') => {
+const uploadFile = async (file, directory = 'general', req = null) => {
   try {
     // Create directory if it doesn't exist
     const uploadDir = path.join(__dirname, '../uploads', directory);
@@ -196,8 +196,15 @@ const uploadFile = async (file, directory = 'general') => {
     // Write file to disk
     fs.writeFileSync(filePath, file.buffer);
 
-    // Generate URL
-    const fileUrl = `/api/uploads/${directory}/${filename}`;
+    // Generate full URL with backend domain
+    let fileUrl;
+    if (req) {
+      const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
+      fileUrl = `${backendUrl}/api/uploads/${directory}/${filename}`;
+    } else {
+      // Fallback to relative URL if no request object provided
+      fileUrl = `/api/uploads/${directory}/${filename}`;
+    }
 
     return {
       filename,
