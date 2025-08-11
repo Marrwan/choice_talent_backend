@@ -142,6 +142,8 @@ const login = async (req, res, next) => {
           id: user.id,
           email: user.email,
           name: user.name,
+          profilePicture: user.profilePicture,
+          careerProfilePicture: user.careerProfilePicture,
           isEmailVerified: user.isEmailVerified,
           subscriptionStatus: user.subscriptionStatus,
           isPremium: user.isPremium(),

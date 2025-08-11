@@ -20,6 +20,8 @@ class SocketService {
         origin: [
           'http://localhost:3000',
           'http://localhost:3003',
+          'https://myjobhunting.com',
+          'https://www.myjobhunting.com',
           process.env.FRONTEND_URL || 'http://localhost:3000'
         ],
         credentials: true

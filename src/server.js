@@ -47,6 +47,9 @@ const corsOptions = {
       'http://localhost:3003',
       'https://choicetalent.netlify.app',
       'https://*.netlify.app',
+      'https://myjobhunting.com',
+      'https://www.myjobhunting.com',
+      'https://*.myjobhunting.com',
       process.env.FRONTEND_URL || 'http://192.168.1.101:3000',
       'http://192.168.1.101:3000'
     ];

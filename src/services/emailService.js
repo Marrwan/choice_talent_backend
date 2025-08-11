@@ -5,7 +5,8 @@ const config = require('../config/config');
  * Create email transporter
  */
 const createTransporter = () => {
-  if (config.email.service === 'gmail') {
+  // If explicitly set to gmail, use Gmail service
+  if (config.email.service && config.email.service.toLowerCase() === 'gmail') {
     return nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -15,14 +16,18 @@ const createTransporter = () => {
     });
   }
 
-  // Default SMTP configuration
+  // Generic SMTP (e.g., WhoGoHost go54)
   return nodemailer.createTransport({
     host: config.email.host,
     port: config.email.port,
-    secure: config.email.secure,
+    secure: config.email.secure, // true for 465, false for 587
     auth: {
       user: config.email.user,
       pass: config.email.password
+    },
+    tls: {
+      // Allow self-signed or older TLS if provider requires
+      rejectUnauthorized: false
     }
   });
 };
@@ -37,13 +42,13 @@ const sendActivationEmail = async (email, name, activationToken) => {
     const activationUrl = `${config.app.frontendUrl}/activate-account?token=${activationToken}`;
     
     const mailOptions = {
-      from: `"Choice Talent Support" <${config.email.from}>`,
+      from: `"MyJobHunting Support" <${config.email.from}>`,
       to: email,
-      subject: 'Activate Your Choice Talent Account',
+      subject: 'Activate Your MyJobHunting Account',
       html: `
         <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #0044CC; margin: 0;">Choice Talent</h1>
+             <h1 style="color: #0044CC; margin: 0;">MyJobHunting</h1>
           </div>
           
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -66,7 +71,7 @@ const sendActivationEmail = async (email, name, activationToken) => {
           
           <div style="text-align: center; color: #999; font-size: 12px;">
             <p>Regards,<br>Support Team</p>
-            <p>&copy; ${new Date().getFullYear()} Choice Talent. All rights reserved.</p>
+            <p>&copy; ${new Date().getFullYear()} MyJobHunting. All rights reserved.</p>
           </div>
         </div>
       `
@@ -91,13 +96,13 @@ const sendPasswordResetEmail = async (email, name, resetToken) => {
     const resetUrl = `${config.app.frontendUrl}/reset-password?token=${resetToken}`;
     
     const mailOptions = {
-      from: `"Choice Talent Support" <${config.email.from}>`,
+      from: `"MyJobHunting Support" <${config.email.from}>`,
       to: email,
-      subject: 'Reset Your Password - Choice Talent',
+      subject: 'Reset Your Password - MyJobHunting',
       html: `
         <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #0044CC; margin: 0;">Choice Talent</h1>
+            <h1 style="color: #0044CC; margin: 0;">MyJobHunting</h1>
           </div>
           
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -121,7 +126,7 @@ const sendPasswordResetEmail = async (email, name, resetToken) => {
           
           <div style="text-align: center; color: #999; font-size: 12px;">
             <p>Regards,<br>Support Team</p>
-            <p>&copy; ${new Date().getFullYear()} Choice Talent. All rights reserved.</p>
+            <p>&copy; ${new Date().getFullYear()} MyJobHunting. All rights reserved.</p>
           </div>
         </div>
       `
@@ -146,13 +151,13 @@ const sendPasswordChangeNotification = async (email, name) => {
     const resetUrl = `${config.app.frontendUrl}/forgot-password`;
     
     const mailOptions = {
-      from: `"Choice Talent Support" <${config.email.from}>`,
+      from: `"MyJobHunting Support" <${config.email.from}>`,
       to: email,
-      subject: 'Password Changed - Choice Talent',
+      subject: 'Password Changed - MyJobHunting',
       html: `
         <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #0044CC; margin: 0;">Choice Talent</h1>
+            <h1 style="color: #0044CC; margin: 0;">MyJobHunting</h1>
           </div>
           
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -177,7 +182,7 @@ const sendPasswordChangeNotification = async (email, name) => {
           
           <div style="text-align: center; color: #999; font-size: 12px;">
             <p>Regards,<br>Support Team</p>
-            <p>&copy; ${new Date().getFullYear()} Choice Talent. All rights reserved.</p>
+            <p>&copy; ${new Date().getFullYear()} MyJobHunting. All rights reserved.</p>
           </div>
         </div>
       `
@@ -202,20 +207,20 @@ const sendWelcomeEmail = async (email, name) => {
     const dashboardUrl = `${config.app.frontendUrl}/dashboard`;
     
     const mailOptions = {
-      from: `"Choice Talent Team" <${config.email.from}>`,
+      from: `"MyJobHunting Team" <${config.email.from}>`,
       to: email,
-      subject: 'Welcome to Choice Talent!',
+      subject: 'Welcome to MyJobHunting!',
       html: `
         <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #0044CC; margin: 0;">Choice Talent</h1>
+            <h1 style="color: #0044CC; margin: 0;">MyJobHunting</h1>
           </div>
           
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <h2 style="color: #333; margin-top: 0;">Welcome to Choice Talent!</h2>
+            <h2 style="color: #333; margin-top: 0;">Welcome to MyJobHunting!</h2>
             <p style="color: #666; line-height: 1.6;">Hello ${name || 'there'},</p>
             <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
-              Your account has been successfully activated! We're excited to have you join the Choice Talent community.
+               Your account has been successfully activated! We're excited to have you join the MyJobHunting community.
             </p>
             
             <div style="text-align: center; margin: 30px 0;">
@@ -231,8 +236,8 @@ const sendWelcomeEmail = async (email, name) => {
           </div>
           
           <div style="text-align: center; color: #999; font-size: 12px;">
-            <p>Best regards,<br>The Choice Talent Team</p>
-            <p>&copy; ${new Date().getFullYear()} Choice Talent. All rights reserved.</p>
+             <p>Best regards,<br>The MyJobHunting Team</p>
+            <p>&copy; ${new Date().getFullYear()} MyJobHunting. All rights reserved.</p>
           </div>
         </div>
       `
@@ -257,13 +262,13 @@ const sendUpgradeReminder = async (email, name, reminderCount = 1) => {
     const upgradeUrl = `${config.app.frontendUrl}/dashboard/subscription`;
     
     const mailOptions = {
-      from: `"Choice Talent Team" <${config.email.from}>`,
+      from: `"MyJobHunting Team" <${config.email.from}>`,
       to: email,
       subject: 'Upgrade to Premium - Unlock Your Full Potential!',
       html: `
         <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #0044CC; margin: 0;">Choice Talent</h1>
+            <h1 style="color: #0044CC; margin: 0;">MyJobHunting</h1>
           </div>
           
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -300,8 +305,8 @@ const sendUpgradeReminder = async (email, name, reminderCount = 1) => {
           </div>
           
           <div style="text-align: center; color: #999; font-size: 12px;">
-            <p>Best regards,<br>The Choice Talent Team</p>
-            <p>&copy; ${new Date().getFullYear()} Choice Talent. All rights reserved.</p>
+             <p>Best regards,<br>The MyJobHunting Team</p>
+            <p>&copy; ${new Date().getFullYear()} MyJobHunting. All rights reserved.</p>
           </div>
         </div>
       `
@@ -326,13 +331,13 @@ const sendSubscriptionActivation = async (email, name, planName, expiresAt) => {
     const dashboardUrl = `${config.app.frontendUrl}/dashboard`;
     
     const mailOptions = {
-      from: `"Choice Talent Team" <${config.email.from}>`,
+      from: `"MyJobHunting Team" <${config.email.from}>`,
       to: email,
       subject: 'Premium Subscription Activated - Welcome to Premium!',
       html: `
         <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #0044CC; margin: 0;">Choice Talent</h1>
+            <h1 style="color: #0044CC; margin: 0;">MyJobHunting</h1>
           </div>
           
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -373,8 +378,8 @@ const sendSubscriptionActivation = async (email, name, planName, expiresAt) => {
           </div>
           
           <div style="text-align: center; color: #999; font-size: 12px;">
-            <p>Best regards,<br>The Choice Talent Team</p>
-            <p>&copy; ${new Date().getFullYear()} Choice Talent. All rights reserved.</p>
+            <p>Best regards,<br>The MyJobHunting Team</p>
+            <p>&copy; ${new Date().getFullYear()} MyJobHunting. All rights reserved.</p>
           </div>
         </div>
       `
