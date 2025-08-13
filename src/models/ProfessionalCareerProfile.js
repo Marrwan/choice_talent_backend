@@ -97,9 +97,15 @@ module.exports = (sequelize) => {
       comment: 'Software knowledge or tools'
     },
     nyscStatus: {
-      type: DataTypes.ENUM('Yes', 'No', 'Ongoing', 'Exempted'),
+      type: DataTypes.ENUM('Completed', 'Ongoing', 'Exempted', 'Not Applicable', 'Foreigner'),
       allowNull: true,
       field: 'nysc_status'
+    },
+    nyscCompletionDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+      field: 'nysc_completion_date',
+      comment: 'Date when NYSC was completed (only required if status is Completed)'
     }
   }, {
     tableName: 'professional_career_profiles',

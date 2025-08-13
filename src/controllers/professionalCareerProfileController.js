@@ -75,6 +75,17 @@ const getProfile = asyncHandler(async (req, res, next) => {
 // Create or update professional career profile
 const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
   const userId = req.user.id;
+  
+  console.log('=== Profile Update Request ===');
+  console.log('User ID:', userId);
+  console.log('Request body keys:', Object.keys(req.body));
+  console.log('Request file:', req.file ? {
+    fieldname: req.file.fieldname,
+    originalname: req.file.originalname,
+    mimetype: req.file.mimetype,
+    size: req.file.size
+  } : 'No file');
+  
   // Parse form data - handle both JSON strings and direct values
   const parseArrayField = (field) => {
     if (!field) return [];
@@ -146,6 +157,7 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
     expertiseCompetencies: rawExpertiseCompetencies,
     softwareSkills: rawSoftwareSkills,
     nyscStatus,
+    nyscCompletionDate,
     workExperiences: rawWorkExperiences,
     higherEducations: rawHigherEducations,
     basicEducations: rawBasicEducations,
@@ -180,6 +192,7 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
   const expertiseCompetencies = sanitizeArray(rawExpertiseCompetencies);
   const softwareSkills = sanitizeArray(rawSoftwareSkills);
   const safeNyscStatus = sanitizeEnum(nyscStatus, NYSC_ENUM_VALUES);
+  const safeNyscCompletionDate = sanitizeDate(nyscCompletionDate);
 
   // Sanitize workExperiences dates and strings
   const safeWorkExperiences = (parseObjectArrayField(rawWorkExperiences) || []).map(exp => ({
@@ -189,6 +202,7 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
     designation: sanitizeString(exp.designation),
     entryDate: sanitizeDate(exp.entryDate),
     exitDate: sanitizeDate(exp.exitDate),
+    isCurrentJob: exp.isCurrentJob === true || exp.isCurrentJob === 'true',
     jobDescription: sanitizeString(exp.jobDescription),
     achievements: sanitizeString(exp.achievements)
   }));
@@ -246,13 +260,17 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
   // Handle profile picture upload if provided
   let profilePictureUrl = profilePicture;
   if (req.file) {
+    console.log('Processing file upload...');
     try {
       const uploadResult = await fileUploadService.uploadFile(req.file, 'professional-profiles', req);
       profilePictureUrl = uploadResult.url;
+      console.log('File upload successful:', uploadResult);
     } catch (error) {
       console.error('File upload error:', error);
       return next(createError(400, 'Failed to upload profile picture'));
     }
+  } else {
+    console.log('No file uploaded, using existing profilePicture:', profilePicture);
   }
 
   // Handle related data with transaction
@@ -268,7 +286,7 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
     if (profile) {
       // Update existing profile
       await profile.update({
-        profilePicture: safeProfilePicture,
+        profilePicture: profilePictureUrl, // Use the uploaded file URL instead of safeProfilePicture
         fullName: safeFullName,
         gender: safeGender,
         dateOfBirth: safeDateOfBirth,
@@ -281,13 +299,14 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
         persona: safePersona,
         expertiseCompetencies: expertiseCompetencies,
         softwareSkills: softwareSkills,
-        nyscStatus: safeNyscStatus
+        nyscStatus: safeNyscStatus,
+        nyscCompletionDate: safeNyscCompletionDate
       }, { transaction });
     } else {
       // Create new profile
       profile = await ProfessionalCareerProfile.create({
         userId,
-        profilePicture: safeProfilePicture,
+        profilePicture: profilePictureUrl, // Use the uploaded file URL instead of safeProfilePicture
         fullName: safeFullName,
         gender: safeGender,
         dateOfBirth: safeDateOfBirth,
@@ -300,7 +319,8 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
         persona: safePersona,
         expertiseCompetencies: expertiseCompetencies,
         softwareSkills: softwareSkills,
-        nyscStatus: safeNyscStatus
+        nyscStatus: safeNyscStatus,
+        nyscCompletionDate: safeNyscCompletionDate
       }, { transaction });
     }
     // Handle work experiences
@@ -449,6 +469,12 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
         { model: TrainingCertification, as: 'trainingCertifications' },
         { model: ReferenceDetail, as: 'referenceDetails' }
       ]
+    });
+
+    console.log('Final profile data:', {
+      id: updatedProfile.id,
+      profilePicture: updatedProfile.profilePicture,
+      fullName: updatedProfile.fullName
     });
 
     res.status(200).json({

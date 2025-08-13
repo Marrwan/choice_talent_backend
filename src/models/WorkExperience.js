@@ -47,6 +47,13 @@ module.exports = (sequelize) => {
       allowNull: true,
       field: 'exit_date'
     },
+    isCurrentJob: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: 'is_current_job',
+      comment: 'Indicates if this is the current job (exit date will be null)'
+    },
     jobDescription: {
       type: DataTypes.TEXT,
       allowNull: true,
