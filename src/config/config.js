@@ -33,12 +33,12 @@ const config = {
   email: {
     // Use generic SMTP by default; set EMAIL_SERVICE=gmail only if you want Gmail
     service: process.env.EMAIL_SERVICE || 'smtp',
-    host: process.env.EMAIL_HOST || 'go54.whogohost.com',
+    host: process.env.EMAIL_HOST || 'mail.choicetalents.com.ng',
     port: parseInt(process.env.EMAIL_PORT) || 465,
     secure: process.env.EMAIL_SECURE ? process.env.EMAIL_SECURE === 'true' : true,
     user: process.env.EMAIL_USER || 'noreply@choicetalents.com.ng',
     password: process.env.EMAIL_PASS || process.env.EMAIL_PASSWORD || '',
-    from: process.env.EMAIL_FROM || 'noreply@choicetalents.com.ng'
+    from: process.env.EMAIL_FROM || 'MyJobHunting <noreply@choicetalents.com.ng>'
   },
   
   security: {

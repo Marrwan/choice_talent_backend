@@ -3,9 +3,17 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
+    // If the 'plans' table does not exist yet (fresh DB), skip this migration.
+    // The table is created later by 20250722100000-create-plans.js
+    try {
+      await queryInterface.describeTable('plans');
+    } catch (error) {
+      return;
+    }
+
     // Clear existing plans
     await queryInterface.bulkDelete('plans', null, {});
-    
+
     // Insert new subscription packages
     await queryInterface.bulkInsert('plans', [
       {
@@ -114,6 +122,13 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
+    // If the 'plans' table does not exist, nothing to rollback
+    try {
+      await queryInterface.describeTable('plans');
+    } catch (error) {
+      return;
+    }
+
     // Remove the new plans
     await queryInterface.bulkDelete('plans', {
       name: {
