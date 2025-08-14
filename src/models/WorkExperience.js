@@ -62,6 +62,24 @@ module.exports = (sequelize) => {
     achievements: {
       type: DataTypes.TEXT,
       allowNull: true
+    },
+    employerOrSupervisorName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: 'employer_or_supervisor_name',
+      comment: 'Name of employer or supervisor for reference purposes'
+    },
+    officialPhone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: 'official_phone',
+      comment: 'Official phone number for reference purposes'
+    },
+    officialEmail: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: 'official_email',
+      comment: 'Official email address for reference purposes'
     }
   }, {
     tableName: 'work_experiences',

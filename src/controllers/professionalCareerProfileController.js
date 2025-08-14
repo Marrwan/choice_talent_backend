@@ -204,7 +204,10 @@ const createOrUpdateProfile = asyncHandler(async (req, res, next) => {
     exitDate: sanitizeDate(exp.exitDate),
     isCurrentJob: exp.isCurrentJob === true || exp.isCurrentJob === 'true',
     jobDescription: sanitizeString(exp.jobDescription),
-    achievements: sanitizeString(exp.achievements)
+    achievements: sanitizeString(exp.achievements),
+    employerOrSupervisorName: sanitizeString(exp.employerOrSupervisorName),
+    officialPhone: sanitizeString(exp.officialPhone),
+    officialEmail: sanitizeString(exp.officialEmail)
   }));
 
   // Sanitize higherEducations dates and strings
