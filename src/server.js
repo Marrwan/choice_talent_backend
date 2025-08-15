@@ -10,6 +10,7 @@ require('dotenv').config();
 const { sequelize } = require('./models');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
+const uploadsRoutes = require('./routes/uploads');
 
 const chatRoutes = require('./routes/chat');
 const callRoutes = require('./routes/call');
@@ -82,26 +83,8 @@ app.use(cors(corsOptions));
 // Handle preflight requests
 app.options('*', cors(corsOptions));
 
-// Serve static files from uploads directory with CORS headers (BEFORE rate limiting)
-app.use('/api/uploads', (req, res, next) => {
-  // Set CORS headers for image requests
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  
-  // Remove restrictive CSP headers for images
-  res.removeHeader('Content-Security-Policy');
-  res.removeHeader('Cross-Origin-Resource-Policy');
-  
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  
-  // Log image requests for debugging
-  console.log('Image request:', req.url);
-  
-  next();
-}, express.static('src/uploads'));
+// Use dedicated uploads route for better error handling and CORS
+app.use('/api/uploads', uploadsRoutes);
 
 // Rate limiting (AFTER static file serving)
 // const limiter = rateLimit({
@@ -159,9 +142,32 @@ app.get('/api/health', (req, res) => {
 
 // Test image endpoint
 app.get('/test-image', (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  
+  // Check if uploads directory exists
+  const uploadsDir = path.join(__dirname, 'uploads');
+  const professionalProfilesDir = path.join(uploadsDir, 'professional-profiles');
+  
+  const uploadsExists = fs.existsSync(uploadsDir);
+  const professionalProfilesExists = fs.existsSync(professionalProfilesDir);
+  
+  // List some files if directory exists
+  let files = [];
+  if (professionalProfilesExists) {
+    try {
+      files = fs.readdirSync(professionalProfilesDir).slice(0, 5); // First 5 files
+    } catch (error) {
+      files = [`Error reading directory: ${error.message}`];
+    }
+  }
+  
   res.status(200).json({
     message: 'Image test endpoint',
-    sampleImage: 'http://localhost:3001/api/uploads/professional-profiles/1753805315000-aea1abb572ef.jpeg',
+    sampleImage: `${req.protocol}://${req.get('host')}/api/uploads/professional-profiles/1753805315000-aea1abb572ef.jpeg`,
+    uploadsDirExists: uploadsExists,
+    professionalProfilesDirExists: professionalProfilesExists,
+    sampleFiles: files,
     corsHeaders: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
